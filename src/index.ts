@@ -17,12 +17,15 @@ export const handler: APIGatewayProxyHandler = async (event) => {
     Key: key,
   });
   try {
-    const res = await client.send(command);
-    if (res.Body == null) {
-      throw new Error("file not found");
+    const { Body: body } = await client.send(command);
+    if (body == null) {
+      return {
+        statusCode: 404,
+        body: "Content Not Found",
+      };
     }
-    const body = await res.Body.transformToByteArray()
-    const buffer = await sharp(body)
+    const image = await body.transformToByteArray();
+    const buffer = await sharp(image)
       .rotate()
       .resize({ width })
       .webp({ quality })
@@ -37,8 +40,8 @@ export const handler: APIGatewayProxyHandler = async (event) => {
     };
   } catch (e) {
     return {
-      statusCode: 200,
-      body: "",
+      statusCode: 500,
+      body: "Internal Server Error",
     };
   }
 };
