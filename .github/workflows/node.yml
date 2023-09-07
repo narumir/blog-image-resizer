@@ -25,6 +25,13 @@ jobs:
 
       - name: Build project
         run: npm run build
+        
+      - name: Copy package file
+        run: cp package*.json dist
+
+      - name: Install Production dependencies
+        working-directory: dist
+        run: npm install --only=production
 
       - name: Zipping lambda source code
         working-directory: dist

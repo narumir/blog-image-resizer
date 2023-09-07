@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "esbuild src/index.ts --bundle --platform=node --loader:.node=file --outfile=dist/index.js"
+    "build": "esbuild src/index.ts --bundle --platform=node --loader:.node=file --external:* --outfile=dist/index.js"
   },
   "keywords": [],
   "author": "",

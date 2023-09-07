@@ -22,7 +22,8 @@ export const handler: APIGatewayProxyHandler = async (event) => {
       throw new Error("file not found");
     }
     const body = await res.Body.transformToByteArray()
-    const buffer = await sharp(body).rotate()
+    const buffer = await sharp(body)
+      .rotate()
       .resize(width, height, { fit: "contain" })
       .webp()
       .toBuffer();
