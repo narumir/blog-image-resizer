@@ -8,8 +8,8 @@ import {
 } from "@aws-sdk/client-s3";
 
 export const handler: APIGatewayProxyHandler = async (event) => {
-  const width: number = parseInt(event.queryStringParameters?.width || "100", 10);
-  const height: number = parseInt(event.queryStringParameters?.height || "100", 10);
+  const width: number | undefined = parseInt(event.queryStringParameters?.width || "", 10) || undefined;
+  const quality: number | undefined = parseInt(event.queryStringParameters?.quality || "", 10) || undefined;
   const key: string = (event.pathParameters?.proxy ?? "").split(".")[0];
   const client = new S3Client({ region: process.env.REGION });
   const command = new GetObjectCommand({
@@ -24,8 +24,8 @@ export const handler: APIGatewayProxyHandler = async (event) => {
     const body = await res.Body.transformToByteArray()
     const buffer = await sharp(body)
       .rotate()
-      .resize(width, height, { fit: "contain" })
-      .webp()
+      .resize({ width })
+      .webp({ quality })
       .toBuffer();
     return {
       headers: {
