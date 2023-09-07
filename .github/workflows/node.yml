@@ -1,0 +1,45 @@
+name: deploy
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  release:
+    name: Update image-resizer
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+        with:
+          ref: main
+
+      - name: Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build project
+        run: npm run build
+
+      - name: Zipping lambda source code
+        working-directory: dist
+        run: zip -r lambda.zip .
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ap-northeast-2
+
+      - name: Upload lambda source code
+        working-directory: dist
+        run: aws s3 cp ./lambda.zip s3://${{ secrets.AWS_S3_BUCKET }}/resizer/lambda.zip
+
+      - name: Deploy lambda source code
+        run: aws lambda update-function-code --no-cli-pager --function-name ${{ secrets.FUNCTION_NAME }} --s3-bucket ${{ secrets.AWS_S3_BUCKET }} --s3-key resizer/lambda.zip
