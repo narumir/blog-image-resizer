@@ -16,15 +16,20 @@ export const handler: APIGatewayProxyHandler = async (event) => {
     Bucket: process.env.BUCKET,
     Key: key,
   });
+  let image: Uint8Array;
   try {
     const { Body: body } = await client.send(command);
     if (body == null) {
-      return {
-        statusCode: 404,
-        body: "Content Not Found",
-      };
+      throw new Error("Content Not Found");
     }
-    const image = await body.transformToByteArray();
+    image = await body.transformToByteArray();
+  } catch (e) {
+    return {
+      statusCode: 404,
+      body: "Content Not Found",
+    };
+  }
+  try {
     const buffer = await sharp(image)
       .rotate()
       .resize({ width })
